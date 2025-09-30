@@ -1,12 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
     const input = document.getElementById("commanderInput");
     const btn = document.getElementById("createCommanderBtn");
-    const tableBody = document.querySelector("#commanderTable tbody");
+    const tableElement = document.getElementById("commanderTable");
+    const tableBody = tableElement.querySelector("tbody");
+
+    let dataTable = null;
 
     async function loadCommanders() {
         const res = await fetch("/api/commanders");
         const data = await res.json();
+
+        // Clear old table data
         tableBody.innerHTML = "";
+
+        // Populate rows
         data.forEach(c => {
             const row = `<tr>
                 <td>${c.name}</td>
@@ -16,6 +23,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td><a href="${c.scryfall_uri}" target="_blank">Link</a></td>
             </tr>`;
             tableBody.innerHTML += row;
+        });
+
+        // (Re)initialize DataTable
+        if (dataTable) {
+            dataTable.destroy();
+        }
+        dataTable = new DataTable(tableElement, {
+            paging: true,
+            pageLength: 10,
+            lengthChange: true,
+            searching: true,
+            ordering: true,
+            order: [[3, "desc"]], // default sort by usage_count
+            columnDefs: [
+                { targets: [3], className: "text-center" }
+            ]
         });
     }
 

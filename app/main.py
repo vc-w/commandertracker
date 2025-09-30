@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import sqlite3
 import requests
 import re
@@ -28,9 +28,10 @@ class PlayerMatchEntry(BaseModel):
     player_id: int
     commander_uuid: str
     place: int
+    notes: str = ""
+    hate_player_id: Optional[int] = None
 
 class MatchCreate(BaseModel):
-    notes: str = ""
     players: List[PlayerMatchEntry]
 
 # -----------------------
@@ -116,7 +117,13 @@ def add_commander(commander: CommanderCreate):
         uuid = card_data["id"]
         name = card_data["name"]
         cidentity = "".join(card_data.get("color_identity", []))
-        mana = card_data.get("mana_cost", "")
+
+        # --- Fix mana cost for double-faced cards ---
+        mana = card_data.get("mana_cost")
+        if not mana and "card_faces" in card_data:
+            mana = card_data["card_faces"][0].get("mana_cost", "")
+        if not mana:
+            mana = ""  # fallback
 
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
@@ -136,10 +143,17 @@ def add_commander(commander: CommanderCreate):
         conn.commit()
         conn.close()
 
-        return {"uuid": uuid, "name": name, "cidentity": cidentity, "mana": mana, "scryfall_uri": scryfall_url}
+        return {
+            "uuid": uuid,
+            "name": name,
+            "cidentity": cidentity,
+            "mana": mana,
+            "scryfall_uri": scryfall_url
+        }
 
     except requests.exceptions.RequestException:
         raise HTTPException(status_code=500, detail="Error fetching Scryfall data")
+
 
 # -----------------------
 # Matches endpoint
@@ -149,37 +163,42 @@ def create_match(match: MatchCreate):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS Matches (
-            GameNumber INTEGER PRIMARY KEY AUTOINCREMENT,
-            Notes TEXT
-        )"""
-    )
-    cur.execute(
-        """CREATE TABLE IF NOT EXISTS PlayerMatch (
-            GameNumber INTEGER NOT NULL,
-            PlayerID INTEGER NOT NULL,
-            CommanderUUID TEXT NOT NULL,
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS Matches (
+            GameNumber INTEGER PRIMARY KEY AUTOINCREMENT
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS PlayerMatch (
+            GameNumber INTEGER,
+            PlayerID INTEGER,
+            CommanderUUID TEXT,
             Place INTEGER,
-            FOREIGN KEY(GameNumber) REFERENCES Matches(GameNumber),
-            FOREIGN KEY(PlayerID) REFERENCES Player(PlayerID),
-            FOREIGN KEY(CommanderUUID) REFERENCES Commanders(UUID)
-        )"""
-    )
+            Notes TEXT DEFAULT "",
+            HatePlayerID INTEGER DEFAULT NULL,
+            PRIMARY KEY (GameNumber, PlayerID, CommanderUUID),
+            FOREIGN KEY (GameNumber) REFERENCES Matches(GameNumber) ON DELETE CASCADE,
+            FOREIGN KEY (PlayerID) REFERENCES Player(PlayerID) ON DELETE CASCADE,
+            FOREIGN KEY (CommanderUUID) REFERENCES Commanders(UUID) ON DELETE CASCADE,
+            FOREIGN KEY (HatePlayerID) REFERENCES Player(PlayerID)
+        )
+    """)
 
-    cur.execute("INSERT INTO Matches (Notes) VALUES (?)", (match.notes,))
+    # Create a new match
+    cur.execute("INSERT INTO Matches DEFAULT VALUES")
     game_number = cur.lastrowid
 
     for entry in match.players:
-        cur.execute(
-            "INSERT INTO PlayerMatch (GameNumber, PlayerID, CommanderUUID, Place) VALUES (?, ?, ?, ?)",
-            (game_number, entry.player_id, entry.commander_uuid, entry.place)
-        )
+        cur.execute("""
+            INSERT INTO PlayerMatch (GameNumber, PlayerID, CommanderUUID, Place, Notes, HatePlayerID)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (game_number, entry.player_id, entry.commander_uuid, entry.place, entry.notes, entry.hate_player_id))
 
     conn.commit()
     conn.close()
 
     return {"game_number": game_number, "players_added": len(match.players)}
+
 
 @app.get("/api/matches")
 def get_matches():

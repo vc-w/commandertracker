@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>CommanderTracker</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
     <link rel="stylesheet" href="assets/css/Navbar-Centered-Brand-Dark-icons.css">
 </head>
 
@@ -27,8 +30,8 @@
     </nav>
     <h1 class="text-center">Commanders</h1>
     <div class="container">
-        <div class="table-responsive text-center" id="commanderTable">
-            <table class="table">
+        <div class="table-responsive text-center">
+            <table class="table" id="commanderTable">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -46,6 +49,9 @@
     </div>
     <div class="container text-center"><label class="form-label">Scryfall Link:&nbsp;</label><input type="url" id="commanderInput" placeholder="Paste Scryfall URL"><button class="btn btn-primary" id="createCommanderBtn" type="button">Add Commander</button></div>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="assets/js/commanders.js"></script>
 </body>
 

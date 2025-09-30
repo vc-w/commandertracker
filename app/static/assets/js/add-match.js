@@ -29,19 +29,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const players = [];
         rows.forEach(row => {
             const selects = row.querySelectorAll("select");
+            const textareas = row.querySelectorAll("textarea");
+
             const player_id = parseInt(selects[0].value);
             const commander_uuid = selects[1].value;
             const place = parseInt(selects[2].value);
-            players.push({ player_id, commander_uuid, place });
-        });
+            const notes = textareas[0].value.trim();
 
-        const notesInput = document.getElementById("matchNotes");
-        const notes = notesInput ? notesInput.value.trim() : "";
+            let hate_player_id = selects[3].value;
+            if (!hate_player_id || hate_player_id === "") {
+                hate_player_id = null;
+            } else {
+                hate_player_id = parseInt(hate_player_id);
+            }
+
+            players.push({ player_id, commander_uuid, place, notes, hate_player_id });
+        });
 
         const res = await fetch("/api/matches", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ notes, players })
+            body: JSON.stringify({ players })
         });
 
         if (res.ok) {
@@ -50,15 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Reset form
             playerFields.innerHTML = "";
             playerCountSelect.value = "";
-            if (notesInput) notesInput.value = "";
         } else {
-            const err = await res.json();
-            alert(err.detail || "Failed to create match");
+            const errText = await res.text();
+            alert(errText || "Failed to create match");
         }
     });
 
-    playerCountSelect.addEventListener("change", () => {
-        const count = parseInt(playerCountSelect.value);
+    function buildPlayerRows(count) {
         playerFields.innerHTML = "";
         if (!count) return;
 
@@ -68,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const labelHeader = document.createElement("div");
         labelHeader.className = "col-auto";
-        labelHeader.textContent = "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0";
+        labelHeader.textContent = "";
         headerRow.appendChild(labelHeader);
 
         const playerHeader = document.createElement("div");
@@ -85,6 +91,16 @@ document.addEventListener("DOMContentLoaded", () => {
         placeHeader.className = "col";
         placeHeader.textContent = "Place";
         headerRow.appendChild(placeHeader);
+
+        const notesHeader = document.createElement("div");
+        notesHeader.className = "col";
+        notesHeader.textContent = "Notes";
+        headerRow.appendChild(notesHeader);
+
+        const hateHeader = document.createElement("div");
+        hateHeader.className = "col";
+        hateHeader.textContent = "Hate";
+        headerRow.appendChild(hateHeader);
 
         playerFields.appendChild(headerRow);
 
@@ -129,17 +145,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Place dropdown
             const placeSelectWrapper = document.createElement("div");
-            placeSelectWrapper.className = "col";
+            placeSelectWrapper.className = "col me-2";
             const placeSelect = document.createElement("select");
             placeSelect.className = "form-select";
             for (let p = 1; p <= count; p++) {
                 const opt = document.createElement("option");
                 opt.value = p;
                 opt.textContent = p;
+                if (p === i) {   // 👈 Default to this row's player number
+                    opt.selected = true;
+                }
                 placeSelect.appendChild(opt);
             }
             placeSelectWrapper.appendChild(placeSelect);
             row.appendChild(placeSelectWrapper);
+
+            // Notes textarea
+            const notesWrapper = document.createElement("div");
+            notesWrapper.className = "col me-2";
+            const notesInput = document.createElement("textarea");
+            notesInput.className = "form-control";
+            notesInput.rows = 1;
+            notesWrapper.appendChild(notesInput);
+            row.appendChild(notesWrapper);
+
+            // Hate dropdown
+            const hateWrapper = document.createElement("div");
+            hateWrapper.className = "col";
+            const hateSelect = document.createElement("select");
+            hateSelect.className = "form-select";
+
+            // Blank option
+            const blankOpt = document.createElement("option");
+            blankOpt.value = "";
+            blankOpt.textContent = "— None —";
+            hateSelect.appendChild(blankOpt);
+
+            playersList.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.PlayerID;
+                opt.textContent = p.Name;
+                hateSelect.appendChild(opt);
+            });
+
+            hateWrapper.appendChild(hateSelect);
+            row.appendChild(hateWrapper);
 
             playerFields.appendChild(row);
 
@@ -154,6 +204,18 @@ document.addEventListener("DOMContentLoaded", () => {
             new Choices(playerSelect, { searchEnabled: true, shouldSort: false });
             new Choices(commanderSelect, { searchEnabled: true, shouldSort: false });
             new Choices(placeSelect, { searchEnabled: false });
+            new Choices(hateSelect, { searchEnabled: true, shouldSort: true });
         }
+    }
+
+    // Build rows when dropdown changes
+    playerCountSelect.addEventListener("change", () => {
+        const count = parseInt(playerCountSelect.value);
+        buildPlayerRows(count);
     });
+
+    // Auto-build if value already set on page load
+    if (playerCountSelect.value) {
+        buildPlayerRows(parseInt(playerCountSelect.value));
+    }
 });
