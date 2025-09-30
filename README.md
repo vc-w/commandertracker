@@ -59,6 +59,6 @@ Matches: stores MatchID numbers.
 Commanders: stores information pulled from Scryfall.
 Players: stores playname and an ID #.
 MatchPlayer: Pulls the GameNumber, UUID, and PlayerID from their respective tables and stores a place for them in that match ID as well as player notes from the match and finally a "hate" where someone can identify someone they hated or hated on them throughout the game.
-<img width="1277" height="357" alt="image" src="https://github.com/user-attachments/assets/835b1ccf-8bb0-437f-a2f3-1dff9c3ec4a8" />
+<img width="1315" height="360" alt="image" src="https://github.com/user-attachments/assets/707cca7d-32cc-42a5-8271-f15916880123" />
 
 
