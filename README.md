@@ -40,11 +40,11 @@ The "Add Match" button allows you to add a new match to the database. This funct
 
 Add-Match Page:
 Select a number of players that palyed in a match (currently minimum of 2 players, and maximum of 8).
-Select a player name, commander, and place they came in for each player. Add notes if desired and add match. This will now be visible in the Match table.
+Select a player name, commander, place they came, notes, and someone they hated during the ma tch for each player.
 
 Future Plans:
 Point tracking - Assign points to players based on what place they came in on a match as well as settings so people can modify point values.
-Hate Tracking - Allow people to identify a person they hated during the match (can be used to deduct points or track problem commanders/players). 
+Hate Tracking - Work wtih data to identify most hated commanders/players. 
 Expand Players Page - Include matches they've played, their most used commander, and average position or winrate.
 Edit Maches - Ability to fix Player Name or Commander for matches not just the place they came in.
 Dashboards:
@@ -55,9 +55,10 @@ Expand Commander Page - Have table load mana symbols instead of letters and numb
 
 Database layout:
 Database is a simple 4 table database. 
-Matches: stores MatchID numbers and notes that people input about the match.
+Matches: stores MatchID numbers.
 Commanders: stores information pulled from Scryfall.
 Players: stores playname and an ID #.
-MatchPlayer: Pulls the GameNumber, UUID, and PlayerID from their respective tables and stores a place for them in that match ID.
-<img width="1279" height="351" alt="image" src="https://github.com/user-attachments/assets/456b0a6d-1c30-4e55-9997-6a6a5f24ce85" />
+MatchPlayer: Pulls the GameNumber, UUID, and PlayerID from their respective tables and stores a place for them in that match ID as well as player notes from the match and finally a "hate" where someone can identify someone they hated or hated on them throughout the game.
+<img width="1277" height="357" alt="image" src="https://github.com/user-attachments/assets/835b1ccf-8bb0-437f-a2f3-1dff9c3ec4a8" />
+
 
