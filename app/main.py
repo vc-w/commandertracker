@@ -101,7 +101,7 @@ def add_commander(commander: CommanderCreate):
         raise HTTPException(status_code=400, detail="No URL provided")
 
     # Extract set code and collector number
-    match = re.search(r"/card/([a-z0-9]+)/(\d+)/", scryfall_url, re.IGNORECASE)
+    match = re.search(r"/card/([a-z0-9]+)/(a-z0-9-]+)/", scryfall_url, re.IGNORECASE)
     if not match:
         raise HTTPException(status_code=400, detail="Invalid Scryfall card URL")
 
