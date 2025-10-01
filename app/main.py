@@ -100,8 +100,11 @@ def add_commander(commander: CommanderCreate):
     if not scryfall_url:
         raise HTTPException(status_code=400, detail="No URL provided")
 
-    # Extract set code and collector number
-    match = re.search(r"/card/([a-z0-9]+)/(a-z0-9-]+)/", scryfall_url, re.IGNORECASE)
+    # Clean URL: remove query params, fragments, trailing slashes
+    scryfall_url = scryfall_url.split("?")[0].split("#")[0].rstrip("/")
+
+    # Extract set code and collector number (supports numbers, letters, and dashes)
+    match = re.search(r"/card/([a-z0-9]+)/([a-z0-9-]+)/", scryfall_url, re.IGNORECASE)
     if not match:
         raise HTTPException(status_code=400, detail="Invalid Scryfall card URL")
 
@@ -118,12 +121,12 @@ def add_commander(commander: CommanderCreate):
         name = card_data["name"]
         cidentity = "".join(card_data.get("color_identity", []))
 
-        # --- Fix mana cost for double-faced cards ---
-        mana = card_data.get("mana_cost")
+        # Some cards (like double-faced or special promos) may not have a "mana_cost"
+        # Handle gracefully
+        mana = card_data.get("mana_cost", "")
         if not mana and "card_faces" in card_data:
+            # Use the front face's mana cost if available
             mana = card_data["card_faces"][0].get("mana_cost", "")
-        if not mana:
-            mana = ""  # fallback
 
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
