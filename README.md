@@ -9,17 +9,7 @@ Warnings:
 This app has no input validation. No login page. If you run this, it is recommended you secure it appropriately. Example: restrict access to it to a proxy server with an authentication page before granting access to the page.
 This the first program I've made in 20 years. A lot of this is new to me. The last website I made was in ASPX where all my code could be in a single file, JS, Python, creating and calling API's are all firsts for me on this project. As such I had to lean on a lot of resources to build this out, it is likely sub-optimal, filled with bugs/vulnerabilities, and has low/no input validations.
 
-Setup:
-Clone this project to your local system.
-Change directories to folder application is downloaded to.
-Optional - Create a persistent folder to hold the sqlite database and mount to the docker container. This is required if you would like your database to be persistent.
-Build the dockerfile
-Example: 
-docker build -t commandertracker .
-
-Run the docker project:
-docker run -d -p 8000:8000 -v <local-folder-path>:/app/db --name ComanderTracker commandertracker
-
+Installation: https://github.com/vc-w/commandertracker/wiki/Installation
 
 Usage:
 Players Page:
@@ -53,12 +43,8 @@ Commander stats pages (play rates, win rates, hate rates, etc)
 Expand Commander Page - Have table load mana symbols instead of letters and numbers (in or out of brackets). 
 
 
-Database layout:
-Database is a simple 4 table database. 
-Matches: stores MatchID numbers.
-Commanders: stores information pulled from Scryfall.
-Players: stores playname and an ID #.
-MatchPlayer: Pulls the GameNumber, UUID, and PlayerID from their respective tables and stores a place for them in that match ID as well as player notes from the match and finally a "hate" where someone can identify someone they hated or hated on them throughout the game.
-<img width="1315" height="360" alt="image" src="https://github.com/user-attachments/assets/707cca7d-32cc-42a5-8271-f15916880123" />
+Information about design can be found in the Wiki.
+https://github.com/vc-w/commandertracker/wiki/Database-Design
 
-
+Problems and Roadmap can be found in the Projects page.
+https://github.com/users/vc-w/projects/1
